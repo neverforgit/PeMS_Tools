@@ -1,0 +1,21 @@
+// Open the page and run the following line in the console
+//loads the appropriate data to the page
+//NOTE: THE PEMS SITE REGENERATES LINKS AROUND 4:00AM
+//district, year, increment, file type
+processFiles(7,2013,'station_5min','text');
+
+// datafile holds the list of download links
+table = document.getElementById('datafiles');
+rows = table.getElementsByTagName('tr')
+
+//print the tables to console
+a = [];
+for (var i = 0; i < rows.length; i++) {
+a.push(rows[i].cells[0].innerHTML.substr(9,43).replace("&amp;","&"))
+}
+
+window.open('...').document.write(a.join(","))
+
+
+//ONCE FILES ARE UNZIPPED, CONVERT FROM TXT TO CSV IN TERMINAL
+find . -iname "*.txt" -exec bash -c 'mv "$0" "${0%\.txt}.csv"' {} \;
