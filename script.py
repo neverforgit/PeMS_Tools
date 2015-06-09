@@ -22,8 +22,8 @@ end_date = date(2015, 1, 1)
 
 dt = {
         'action' : 'login',
-        'username' : 'andrew.campbell@berkeley.edu',
-        'password':'AbK612Bg',
+        'username' : 
+        'password':
 }
 
 p = {
