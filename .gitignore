@@ -6,6 +6,7 @@
 ### Ignore scraper output
 *.geojson
 *.js
+*.txt.gz
 
 ### Java template
 *.class
