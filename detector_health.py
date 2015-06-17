@@ -9,7 +9,7 @@ from numpy.random import random_integers
 ## 
 # Define paths and logging
 ##
-out_path = 'C:\\Users\\acampbell\\Documents\\FCMS\\PeMS\\health_detail\\'
+out_path = 'C:\\Users\\acampbell\\Documents\\FCMS\\PeMS\\data\\health_detail'
 logging.basicConfig(filename=out_path+'log.log', level=logging.DEBUG)
 
 ##

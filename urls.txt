@@ -1,0 +1,6 @@
+
+# TEST URL
+http://pems.dot.ca.gov/?st_cd=on&content=detector_health&st_or=on&dnode=district&st_ml=on&report_form=1&s_time_id=1388534400&st_ch=on&s_dd=1&district_id=4&filter=all&st_hv=on&export=text&eqpo=&tab=dh_detail&st_ff=on&s_mm=1&tag=&s_yy=2014&st_fr=on
+
+THIS ONE IS THE GOOD URL
+http://pems.dot.ca.gov/?report_form=1&dnode=District&content=detector_health&tab=dh_detail&export=text&district_id=4&s_time_id=1388534400&s_mm=1&s_dd=1&s_yy=2014&st_cd=on&st_ch=on&st_ff=on&st_hv=on&st_ml=on&st_fr=on&st_or=on&filter=all&eqpo=&tag=
