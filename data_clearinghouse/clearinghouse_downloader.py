@@ -92,9 +92,9 @@ if __name__ == "__main__":
     # Load config constants
     config = ConfigParser()
     config.read(config_path)
-    html_path = config.get('Paths', 'html')
-    log_path = config.get('Paths', 'log_path')
-    out_path = config.get('Paths', 'out_path')
+    html_path = config.get('Paths', 'html_file_path')
+    log_path = config.get('Paths', 'log_file_path')
+    out_path = config.get('Paths', 'out_dir_path')
     username = config.get('Creds', 'username')
     pwd = config.get('Creds', 'password')
         

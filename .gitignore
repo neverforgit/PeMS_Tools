@@ -1,5 +1,9 @@
 # Created by .ignore support plugin (hsz.mobi)
 
+### Don't push my actual config files
+config_*.ini
+
+
 ### Ignore Pycharm project files
 *.idea*
 
