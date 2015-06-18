@@ -1,6 +1,9 @@
 # Created by .ignore support plugin (hsz.mobi)
 
-### Don't push my actual config files
+### Ignore data folders
+*/data*/*
+
+### Ignore push my actual config files
 config_*.ini
 
 
