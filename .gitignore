@@ -2,7 +2,7 @@
 
 ### Ignore data folders
 ./data_station_5min_2014
-./data*/
+./data_test
 
 ### Ignore push my actual config files
 config_*.ini
