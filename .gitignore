@@ -1,7 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 
 ### Ignore data folders
-data*\*
+data_station_5min_2014
 
 ### Ignore push my actual config files
 config_*.ini
