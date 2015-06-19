@@ -114,7 +114,7 @@ if __name__ == "__main__":
         #  Iterate through delta day long blocks
         for ds,de in zip(dates[0:-1], dates[1:]):
             print "start date: " + str(ds)
-            rd.download_routes(ds, de)
+            rd.download_routes(ds, de - timedelta(1))
         #  Download remaining block of days
         rd.download_routes(de, end_date)
    
