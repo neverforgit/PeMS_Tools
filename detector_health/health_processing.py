@@ -2,7 +2,7 @@ __author__ = "Andrew A. Campbell"
 __email__ = "andrew dot campbell at sfcta dot org"
 """
 Script will process a directory of daily detector health reports. Note that this
-assumes a daily report frequency! The output is a Pandas data frame where 
+assumes a daily report frequency! The output is a Pandas data frame where
 each column is the average health, accross all lanes (h = 1 if good, h = 0 o.w)
 as well as the yearly average.
 """
@@ -25,7 +25,7 @@ def daterange(start_date, end_date, delta=1):
     for n in range(days/delta+1):
         out.append(start_date + timedelta(n*delta))
     return out
-    
+
 def process_day(dir, day, df):
     """
     Args:
@@ -36,16 +36,11 @@ def process_day(dir, day, df):
     in the data frame with the average lane health for that day.
     """
     name = day.split('_health')[0]
-    temp = pd.read_csv(dir+day, sep='\t')
-    
-    """"TODO do a groupby on the VDS id
-    use the agg(...) method to take the mean of the health, where y_i = 1 if good and = 0 o.w.
-    e.g.
-    grouped.agg({'C' : np.sum,
-   ....:              'D' : lambda x: np.std(x, ddof=1)})
-    
-    """
-    
+    #  Create a dataframe for the single day. The 'Status' column describes the percent of lanes that were good for that day
+    temp = pd.read_csv(dir+day, sep='\t').groupby('VDS').agg({'Status': lambda x: float(np.sum([xx==0 for i,xx in enumerate(x)]))/float(len(x))})
+    #  Match the values in the temp dataframe to the appropriate column in df
+    temp.columns = [name] #  rename the column for matching
+    return pd.concat([df, temp])
 
 
 
@@ -55,12 +50,12 @@ if __name__ = "main":
         exit
     else:
         data_path = sys.argv[1]
-    
+
     fnames = os.listdir(data_path) #  list of data files to process
     year = int(fnames[0].split('_')[0])
-    #days = daterange(date(year,1,1), date(year,12,31)) #  List of all days in year 
+    #days = daterange(date(year,1,1), date(year,12,31)) #  List of all days in year
     days = [d.split('_health')[0] for d in fnames]
     df = pd.DataFrame(columns=['VDS', 'Year_Avg'] + days)  #  Initiate empty data frame
-        
+
     [process_day(d, df) for d in fnames] #  Process all the days
-    
+
