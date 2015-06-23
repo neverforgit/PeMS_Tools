@@ -13,7 +13,7 @@ Downloads performance time series at 5 minute intervals for a list of route ids 
 def daterange(start_date, end_date, delta=45):
     """
     Tool for iterating over range of dates.
-    Yields the starting date of each new query.
+    Returns a list of the starting date of each new query.
     """
     out = []
     days = (end_date - start_date).days
@@ -59,7 +59,9 @@ class RouteDownloader():
                 self.p['e_time_id']=tde; self.p['e_mm']=str(de.month); self.p['e_dd']=str(de.day); self.p['e_yy']=str(de.year)
                 #  Make the new request and save the returned content
                 r = self.c.request('GET', self.url_base, params=self.p)
-                with open(self.out_path + str(rid) + '_' + str(ds.year) + '_' + str(ds.month) + '_' + str(ds.day) + '_' + 'route.txt', 'wb') as fi: fi.write(r.text)
+                month = str(d.month) if d.month > 9 else '0'+str(d.month)
+                day = str(d.day) if d.day > 9 else '0'+str(d.day)
+                with open(self.out_path + str(rid) + '_' + str(ds.year) + '_' + month + '_' + day + '_' + 'route.txt', 'wb') as fi: fi.write(r.text)
                 time.sleep(random_integers(ts, int(1.2*ts)))
             except ConnectionError:
                 logging.warning('ConnectionError')

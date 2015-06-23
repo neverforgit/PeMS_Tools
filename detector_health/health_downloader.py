@@ -75,7 +75,9 @@ with session() as c:
                 td = str(int((d - date(1970,1,1)).total_seconds()))
                 p['s_time_id']=td; p['s_mm']=str(d.month); p['s_dd']=str(d.day); p['s_yy']=str(d.year)
                 r = c.request('GET', url_base, params=p)
-                with open(out_path + str(d.year) + '_' + str(d.month) + '_' + str(d.day) + '_' + 'health_detail.txt', 'wb') as fi: fi.write(r.text)
+                month = str(d.month) if d.month > 9 else '0'+str(d.month)
+                day = str(d.day) if d.day > 9 else '0'+str(d.day)
+                with open(out_path + str(d.year) + '_' + month + '_' + day + '_' + 'health_detail.txt', 'wb') as fi: fi.write(r.text)
                 time.sleep(random_integers(ts,int(1.2*ts)))
             except ConnectionError:
                 logging.warning('ConnectionError')
