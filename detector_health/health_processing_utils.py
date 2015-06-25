@@ -26,7 +26,7 @@ def daterange(start_date, end_date, delta=1):
         out.append(start_date + timedelta(n*delta))
     return out
 
-def process_day(dir, day, df):
+def process_day(dir, fday, df):
     """
    Reads a single day of the Detector Health Detail report. Updates the matching column in the data frame with the average lane health for that day.
 
@@ -36,12 +36,22 @@ def process_day(dir, day, df):
         df (DataFrame) = data frame of health summary values
 
     """
-    name = day.split('_health')[0]
+    name = fday.split('_health')[0]
     #  Create a dataframe for the single day. The 'Status' column describes the percent of lanes that were good for that day
-    temp = pd.read_csv(dir+day, sep='\t').groupby('VDS').agg({'Status': lambda x: float(np.sum([xx==0 for i,xx in enumerate(x)]))/float(len(x))})
+    temp = pd.read_csv(dir+fday, sep='\t').groupby('VDS').agg({'Status': lambda x: float(np.sum([xx==0 for i,xx in enumerate(x)]))/float(len(x))})
     #  Match the values in the temp dataframe to the appropriate column in df
     temp.columns = [name] #  rename the column for matching
     return pd.concat([df, temp])
+
+def process_joined(df):
+    """
+    Args:
+        df (DataFrame) = Pandas DataFrame of all the days joined into one
+    """
+    #TODO groupby date, convert health field to 0,1 status indicator
+    #TODO how to cast VDS into column labels and get rid of rest of fields?
+
+    temp = df.groupby('Date')
 
 def join_all(data_path, out_path):
     """
@@ -52,7 +62,7 @@ def join_all(data_path, out_path):
         data_path (str) = path to directory with data files
         out_path (str) = path to directory where joined csv is written
     """
-    fnames = [f for f in os.listdir(data_path) if re.match('[0-9]+_[0-9]+_[0-9]+_', f)]
+    fnames = [f for f in os.listdir(data_path) if re.match('[0-9]+_[0-9]+_[0-9]+_', f)].sort()
     start_path = os.getcwd()
     os.chdir(data_path)
     ##
