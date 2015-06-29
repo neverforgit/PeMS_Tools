@@ -62,7 +62,8 @@ def join_all(data_path, out_path):
         data_path (str) = path to directory with data files
         out_path (str) = path to directory where joined csv is written
     """
-    fnames = [f for f in os.listdir(data_path) if re.match('[0-9]+_[0-9]+_[0-9]+_', f)].sort()
+    fnames = [f for f in os.listdir(data_path) if re.match('[0-9]+_[0-9]+_[0-9]+_', f)]
+    fnames.sort()
     start_path = os.getcwd()
     os.chdir(data_path)
     ##
@@ -71,6 +72,7 @@ def join_all(data_path, out_path):
     temp = pd.read_csv(fnames[0], sep='\t')
     h = list(temp.columns)
     #  Count the number of lines so we initialize the dataframe with proper memory allocation
+    #TODO timeit and see if it would be faster to use read_csv
     i = 0
     for name in fnames:
         with open(name, 'r') as f:
@@ -82,18 +84,19 @@ def join_all(data_path, out_path):
     #  Read each file into a temporary data frame and add to the output df
     ##
     i = 0
+    #TODO figure out why only the first loop writes sucessfully
     for name in fnames:
         day = name.split('_health')[0]
         temp = pd.read_csv(name, sep='\t')
-        df.iloc[i:i+temp.shape[0],0] = day
-        df.iloc[i:i+temp.shape[0],1:] = temp[:]
+        df.iloc[i:i+temp.shape[0], 0] = day
+        df.iloc[i:i+temp.shape[0], 1:] = temp[:]
         i += temp.shape[0]
     ##
     #  Write the output
     ##
     os.chdir(start_path)
     year = fnames[0].split('_')[0]
-    df.to_csv(start_path + '/_' + year + '_joined_health_detail.txt', sep='\t')
+    df.to_csv(start_path + '/' + year + '_joined_health_detail.txt', sep='\t')
     return df
 
 

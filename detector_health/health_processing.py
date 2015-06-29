@@ -85,7 +85,7 @@ def join_files(data_path, out_path='./'):
 
 
 
-if __name__ = "main":
+if __name__ == "__main__":
     if len(sys.argv) < 2:
         print "ERROR: you must provide the path to the data directory as a system arg."
         exit

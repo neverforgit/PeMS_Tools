@@ -3,14 +3,20 @@
 ### Ignore data folders
 ./data_station_5min_2014
 data/
+./data/
 **/data*
+output/
 
 ### Ignore push my actual config files
 config_*.ini
 
 
 ### Ignore Pycharm project files
-*.idea*
+.idea/
+*.iml
+*.ipr
+*.iws
+
 
 ### Ignore scraper output
 *.geojson
