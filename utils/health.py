@@ -11,6 +11,9 @@ import os, sys, re
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
 
 from datetime import date, timedelta
 
@@ -72,7 +75,6 @@ def join_all(data_path, out_path):
     temp = pd.read_csv(fnames[0], sep='\t')
     h = list(temp.columns)
     #  Count the number of lines so we initialize the dataframe with proper memory allocation
-    #TODO timeit and see if it would be faster to use read_csv
     i = 0
     for name in fnames:
         with open(name, 'r') as f:
@@ -84,19 +86,38 @@ def join_all(data_path, out_path):
     #  Read each file into a temporary data frame and add to the output df
     ##
     i = 0
-    #TODO figure out why only the first loop writes sucessfully
     for name in fnames:
         day = name.split('_health')[0]
         temp = pd.read_csv(name, sep='\t')
         df.iloc[i:i+temp.shape[0], 0] = day
-        df.iloc[i:i+temp.shape[0], 1:] = temp[:]
+        df.iloc[i:i+temp.shape[0], 1:] = temp.values
         i += temp.shape[0]
     ##
     #  Write the output
     ##
     os.chdir(start_path)
     year = fnames[0].split('_')[0]
-    df.to_csv(start_path + '/' + year + '_joined_health_detail.txt', sep='\t')
+    df.to_csv(out_path + year + '_joined_health_detail.txt', sep='\t')
     return df
+
+def plot_VDS_series(x, out_path, dates,
+                    save_flag=True, fs=(10,6)):
+    """
+
+    :param x: (series) Pandas series of daily VDS station average health
+    :param out_path: (str) Path to directory to save image.
+    :param dates: ([date]) List of date objects.
+    :param save_flag: (boolean) if True, saves output figure
+    :param fs: ((int, int)) 2-tuple of figure size
+    :return:
+    """
+    plt.close('all')
+    fig = plt.figure(figsize=fs)
+    ax = fig.gca()
+    plt.plot(dates, x, ':bo')
+    fig.autofmt_xdate()
+    ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
+    plt.title('VDS: ' + str(x.name) + ', Year: ' + str(dates[0].year))
+    plt.savefig(out_path + '/' + str(dates[0].year) + '_' + str(x.name) + '.png', format='png')
 
 
