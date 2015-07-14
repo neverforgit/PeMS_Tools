@@ -10,7 +10,7 @@ from ConfigParser import ConfigParser
 Downloads performance time series at 5 minute intervals for a list of route ids and range of dates.
 """
 
-def daterange(start_date, end_date, delta=45):
+def daterange(start_date, end_date, delta=1):
     """
     Tool for iterating over range of dates.
     Returns a list of the starting date of each new query.
@@ -23,7 +23,7 @@ def daterange(start_date, end_date, delta=45):
     # for d in range(1, days % delta+1): #  get the remainder days
         # yield start_date + timedelta(n*delta + d)
         
-class RouteDownloader():
+class HealthDownloader():
 
     def __init__(self):
         self.url_base = 'http://pems.dot.ca.gov/' #  base url for all PeMS queries    
@@ -36,38 +36,31 @@ class RouteDownloader():
         self.c = session()
         self.c.post(self.url_base, data=self.dt)
         
-    def download_routes(self, ds, de):
+    def download_health(self, ds):
         """
-        rid (str) = route id
         ds (date) = start date
-        de (date) = end date
         """
-        if ds == de:
-            return None
         #  Must first open session with open_session() to log in to PeMS
-        ts = 10 #  Default time to sleep
+        ts = 10  # Default time to sleep
         logging.info('initial time to sleep ' + str(ts))
         while True:
             try:
-                logging.info('route_id: ' + rid)
                 logging.info('start_date: ' + str(ds))
                 logging.info('time to sleep ' + str(ts))
                 #  Update the dynamic payload parameters
-                tds = str(int((ds - date(1970,1,1)).total_seconds()))
-                tde = str(int((de - date(1970,1,1)).total_seconds()) + 3600*23 + 60*59 + 59) 
+                tds = str(int((ds - date(1970, 1, 1)).total_seconds()))
                 self.p['s_time_id']=tds; self.p['s_mm']=str(ds.month); self.p['s_dd']=str(ds.day); self.p['s_yy']=str(ds.year)
-                self.p['e_time_id']=tde; self.p['e_mm']=str(de.month); self.p['e_dd']=str(de.day); self.p['e_yy']=str(de.year)
                 #  Make the new request and save the returned content
                 r = self.c.request('GET', self.url_base, params=self.p)
-                month = str(d.month) if d.month > 9 else '0'+str(d.month)
-                day = str(d.day) if d.day > 9 else '0'+str(d.day)
-                with open(self.out_path + str(rid) + '_' + str(ds.year) + '_' + month + '_' + day + '_' + 'route.txt', 'wb') as fi: fi.write(r.text)
+                month = str(ds.month) if ds.month > 9 else '0'+str(ds.month)
+                day = str(ds.day) if ds.day > 9 else '0'+str(ds.day)
+                with open(self.out_path + str(ds.year) + '_' + month + '_' + day + '_' + 'health_detail.txt', 'wb') as fi: fi.write(r.text)
                 time.sleep(random_integers(ts, int(1.2*ts)))
             except ConnectionError:
                 logging.warning('ConnectionError')
                 ts = ts*2
                 time.sleep(ts) #  Sleep and login again
-                c.post(self.url_base, data=dt) #, params=p)
+                self.c.post(self.url_base, data=self.dt) #, params=p)
                 continue
             break
 
@@ -77,47 +70,32 @@ if __name__ == "__main__":
         exit
     config_path = sys.argv[1]
 
-
     ##
     #  Load config and start logger
     ##
     conf = ConfigParser()
     conf.read(config_path)
     #  date range
-    ds = [int(x) for x in conf.get('Routes', 'start_date').replace(' ', '').split(',')]
-    de = [int(x) for x in conf.get('Routes', 'end_date').replace(' ', '').split(',')]
+    ds = [int(x) for x in conf.get('Dates', 'start_date').replace(' ', '').split(',')]
+    de = [int(x) for x in conf.get('Dates', 'end_date').replace(' ', '').split(',')]
     start_date = date(ds[0], ds[1], ds[2])
     end_date = date(de[0], de[1], de[2])
-    #  route ids
-    route_ids = conf.get('Routes', 'route_ids').replace(' ', '').split(',')
     #  logging
-    logging.basicConfig(filename=conf.get('Paths', 'log_path'), level=logging.DEBUG)
+    logging.basicConfig(filename=conf.get('Paths', 'log_file_path'), level=logging.DEBUG)
     
     ##
     # Initialize the downloader and populate fields
     ##
-    rd = RouteDownloader()
-    rd.out_path = conf.get('Paths', 'out_path')
-    rd.dt = {
-        'action': 'login',
-        'username': conf.get('Creds', 'username').strip(),
-        'password': conf.get('Creds', 'password').strip()
-        }
-    rd.p = {t[0]:t[1] for t in conf.items('Payload')}
+    hd = HealthDownloader()
+    hd.out_path = conf.get('Paths', 'out_dir_path')
+    hd.dt = {t[0]:t[1] for t in conf.items('Creds')}
+    hd.p = {t[0]:t[1] for t in conf.items('Payload')}
     
     ##
-    #  Loop through route ids and dates and download files
+    #  Loop through dates and download files
     ##
-    rd.open_session() #  Log in to PeMS
+    hd.open_session() #  Log in to PeMS
     dates = daterange(start_date, end_date)
-    for rid in route_ids:
-        rd.p['route_id'] = rid
-        print "route id: " + rid
-        #  Iterate through delta day long blocks
-        for ds,de in zip(dates[0:-1], dates[1:]):
-            print "start date: " + str(ds)
-            rd.download_routes(ds, de - timedelta(1))
-        #  Download remaining block of days
-        rd.download_routes(de, end_date)
-   
-    
+    for ds in dates:
+        print "start date: " + str(ds)
+        hd.download_health(ds)

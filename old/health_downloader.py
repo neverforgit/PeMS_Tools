@@ -1,7 +1,7 @@
 import time
 import logging
 from datetime import date, timedelta
-from requests import session
+from requests import session, ConnectionError
 from numpy.random import random_integers
 
 #TODO all of these constants in the beginning should be read from a config file

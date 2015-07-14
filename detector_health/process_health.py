@@ -46,6 +46,7 @@ if __name__ == "__main__":
 
     ##
     # Step 3 - make time series plots of all sensor's daily health
+    ##
     start_date = date(2014, 01, 01)
     end_date = date(2014, 12, 31)
     dates = daterange(start_date, end_date, 1)
@@ -53,5 +54,10 @@ if __name__ == "__main__":
     plt.ioff()  # Turn off interactive mode to hopefully supress displaying of plots
     for x in g.iterrows():
         plot_VDS_series(x[1][0:365], out_path_health_imgs, dates)
+
+    ##
+    # Move the SF plots to a separate folder
+    ##
+
 
 
