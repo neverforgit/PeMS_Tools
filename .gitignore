@@ -16,7 +16,7 @@ config_*.ini
 
 ### Ignore executables in \bin (execpt for test.py)
 ###./bin/(?!test.py)(*.py)*
-/bin/*
+./bin/
 
 ### Ignore Pycharm project files
 .idea/
