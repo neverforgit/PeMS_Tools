@@ -1,5 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
 
+### Ignore bfg.jar reports from when I make messes
+./..bfg-report
+
 ### Ignore data folders and output folders
 ./data_station_5min_2014
 data/

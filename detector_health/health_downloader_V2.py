@@ -49,12 +49,14 @@ class HealthDownloader():
                 logging.info('time to sleep ' + str(ts))
                 #  Update the dynamic payload parameters
                 tds = str(int((ds - date(1970, 1, 1)).total_seconds()))
-                self.p['s_time_id']=tds; self.p['s_mm']=str(ds.month); self.p['s_dd']=str(ds.day); self.p['s_yy']=str(ds.year)
+                self.p['s_time_id']=tds; self.p['s_mm']=str(ds.month); self.p['s_dd']=str(ds.day);
+                self.p['s_yy']=str(ds.year)
                 #  Make the new request and save the returned content
                 r = self.c.request('GET', self.url_base, params=self.p)
                 month = str(ds.month) if ds.month > 9 else '0'+str(ds.month)
                 day = str(ds.day) if ds.day > 9 else '0'+str(ds.day)
-                with open(self.out_path + str(ds.year) + '_' + month + '_' + day + '_' + 'health_detail.txt', 'wb') as fi: fi.write(r.text)
+                with open(self.out_path + str(ds.year) + '_' + month + '_' + day + '_' + 'health_detail.txt', 'wb') \
+                        as fi: fi.write(r.text)
                 time.sleep(random_integers(ts, int(1.2*ts)))
             except ConnectionError:
                 logging.warning('ConnectionError')
