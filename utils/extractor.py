@@ -65,13 +65,14 @@ def get_meta_targets(meta_path, shape_path, out_path="", write_out=False,  pream
     poly_points = shapefile.Reader(shape_path).shapes()[0].points
     poly = Polygon(poly_points)
 
-    for name in fnames:
-        temp = pd.read_csv(name, sep='\t')
-        # Extract only the values within the poly
-        temp = temp[temp.apply(lambda x: in_poly(x, poly), axis=1)]
-    #TODO figure out what to do with the extracted dataframe. Should I make one big dataframe consisting all the subsets extracted from raw files. Or create new subsampled files?
-
+    temp_list = []
+    for name in fnames:  # Add the rest
+        temp_list.append(temp_df(name,poly))
+    df = pd.concat(temp_list, ignore_index=True)
+    if write_out:
+        df.to_csv(out_path, sep='\t')
     os.chdir(start_dir)
+    return df
 
 def in_poly(row, poly):
     """
@@ -81,4 +82,17 @@ def in_poly(row, poly):
     :return: (boolean) True is the x,y coords in the row are withing the poly.
     """
     return poly.contains(Point(row['Longitude'], row['Latitude']))
+
+def temp_df(name, poly):
+    """
+    Helper function to read a metadata file into a dataframe and append a date column
+    :param name (str) Name of specific metadata file to open
+    :param poly: (Polygon) Shapely Polygon
+    :return: (dataframe)
+    """
+    temp = pd.read_csv(name, sep='\t')
+    # Extract only the values within the poly
+    temp = temp[temp.apply(lambda x: in_poly(x, poly), axis=1)]
+    temp['Date'] = name[-14:-4]  # File names are fixed width
+    return temp
 
