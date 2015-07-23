@@ -8,8 +8,10 @@
 data/
 ./data/
 **/data*
+
 output/
 ./output/
+**/output**
 
 ### Ignore my actual config files
 config_*.ini
