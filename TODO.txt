@@ -1,1 +1,0 @@
-1) Move all the executables to the \bin package

@@ -1,5 +1,6 @@
 __author__ = "Andrew A. Campbell"
 __email__ = "andrew dot campbell at sfcta dot org"
+#TODO is this docstring reall valid?
 """
 Script will process a directory of daily detector health reports. Note that this
 assumes a daily report frequency! The output is a Pandas data frame where
@@ -31,8 +32,8 @@ def daterange(start_date, end_date, delta=1):
 
 def process_day(dir, fday, df):
     """
-   Reads a single day of the Detector Health Detail report. Updates the matching column in the data frame with the average lane health for that day.
-
+   Reads a single day of the Detector Health Detail report. Updates the matching column in the data frame
+   with the average lane health for that day.
     Args:
         dir (str) = path to directory of data files
         day (str) = name of file, format is YYYY_M_D_*
@@ -81,6 +82,7 @@ def join_all(data_path, out_path):
             f.next() #  Burn the header
             for line in f:
                 i+=1
+    #TODO
     df = pd.DataFrame(index=np.arange(0,i), columns=['Date']+h)
     ##
     #  Read each file into a temporary data frame and add to the output df

@@ -1,0 +1,11 @@
+Status_Name,Status_Code
+Good,0
+No Data,1
+Insufficient Data,2
+Card Off,3
+High Val,4
+Intermittent,5
+Constant,6
+Feed Unstable,7
+Line Down,8
+Ctlr Down,9
