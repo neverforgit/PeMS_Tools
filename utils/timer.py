@@ -1,3 +1,5 @@
+# credit: http://www.huyng.com/posts/python-performance-analysis/
+
 import time
 
 class Timer(object):

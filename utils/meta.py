@@ -102,6 +102,25 @@ def get_meta_targets_from_df(meta_df, shape_path):
     poly = Polygon(poly_points)
     return meta_df[meta_df.apply(lambda x: in_poly(x, poly), axis=1)]
 
+def get_moving_meta_targets_from_df(meta_df, shape_path):
+    """
+    Used for troubleshooting the moving PeMS IDs. Extracts all rows from dataframe of joined metadata files where at
+    least one observation for the station ID falls within the polygon defined by the shapefile.
+    :param meta_df: (pandas.DataFrame) Dataframe of joined metadata files. This should only contain observations of
+    moving stations! Must be output of meta.get_moving_ids()
+    :param shape_path: (str) Path to the polygon shapefile. Shapefile must contain only one polygon.
+    :return: (pandas.DataFrame) Dataframe that is a subset of the input dataframe. Only contains rows of stations
+            within the polygon boundaries.
+    """
+    # Create Shapely polygon
+    poly_points = shapefile.Reader(shape_path).shapes()[0].points
+    poly = Polygon(poly_points)
+    # Dataframe where all observations fall within the polygon
+    in_poly_df = meta_df[meta_df.apply(lambda x: in_poly(x, poly), axis=1)]  # Only rows within poly
+    # Dataframe that includes all stations IDs where at least one observations was within the poly
+    moving_ids = np.unique(in_poly_df['ID'])
+    return meta_df[meta_df.apply(lambda x: x['ID'] in moving_ids, axis=1)]
+
 def get_uniqe_id_locs(meta_df):
     """
     Takes a dataframe of joined metadata files (output of join_meta) and returns a dataframe of all the unique 3-tuples of
@@ -122,11 +141,26 @@ def filter_moving_ids(meta_df):
     utils.meta.join_meta() to ensure the date column with proper format is present.
     :return: (pd.DataFrame) Subset of input with moving stations removed.
     """
-    unique_id_locs = get_uniqe_id_locs(meta_df)
-    unique_id = unique_id_locs.drop_duplicates(['ID'])
-    idx = [i for i in unique_id_locs.index if i not in unique_id.index]  # Indices of IDs that appear more than
+    unique_id_locs = get_uniqe_id_locs(meta_df)  # DF w/ one entry for each unique (ID, Lat, Lon) 3-tuple
+    unique_id = unique_id_locs.drop_duplicates(['ID'])  # DF w/ one entry for each unique ID
+    idx = [i for i in unique_id_locs.index if i not in unique_id.index]  # Indices of IDs that appear more than once
     moving_ids = np.unique(unique_id_locs.loc[idx, 'ID'])  # Series of station ID values of moving stations
     return meta_df[meta_df.apply(lambda x: x['ID'] not in moving_ids, axis=1)]
+
+def get_moving_ids(meta_df):
+    """
+    Due to bugs in the PeMS database, the mapping of station ID to Latitude and Longitude is not consistent. Some
+    stations "move". This script finds the moving stations and returns only their data. This is useful for
+    analysis of the problem of moving stations.
+    :param meta_df: (pd.DataFrame) Pandas Dataframe of joined metadata files. Must be the output of
+    utils.meta.join_meta() to ensure the date column with proper format is present.
+    :return: (pd.DataFrame) Subset of input that only includes the IDs that move
+    """
+    unique_id_locs = get_uniqe_id_locs(meta_df)  # DF w/ one entry for each unique (ID, Lat, Lon) 3-tuple
+    unique_id = unique_id_locs.drop_duplicates(['ID'])  # DF w/ one entry for each unique ID
+    idx = [i for i in unique_id_locs.index if i not in unique_id.index]  # Indices of IDs that appear more than once
+    moving_ids = np.unique(unique_id_locs.loc[idx, 'ID'])  # Series of station ID values of moving stations
+    return meta_df[meta_df.apply(lambda x: x['ID'] in moving_ids, axis=1)]
 
 def get_unique_xy(meta_path, county=75, preamble='d04_text_meta'):
     """

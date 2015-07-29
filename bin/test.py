@@ -1,7 +1,7 @@
 __author__ = 'acampbell'
 import sys
 
-import utils.extractor
+import utils.station
 
 print 'Relative imports are working!'
 
