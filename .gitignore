@@ -16,9 +16,10 @@ output/
 ### Ignore my actual config files
 config_*.ini
 
-### Ignore executables in \bin (execpt for test.py)
+### Ignore executables in \bin (execpt for test.py and time_df_growth)
 bin/*.py
 !bin/test.py
+!bin/time_df_growth.py
 
 ### Ignore Pycharm project files
 .idea/

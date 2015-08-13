@@ -5,7 +5,7 @@ import pandas as pd
 from utils.timer import Timer
 
 # Some constants
-num_dfs = 10  # Number of random dataframes to generate
+num_dfs = 500  # Number of random dataframes to generate
 n_rows = 2500
 n_cols = 40
 n_reps = 100  # Number of repetitions for timing
@@ -47,6 +47,10 @@ def method3():
         out_df3.iloc[ix*n_rows:(ix+1)*n_rows, :] = df.values
     return out_df3
 
+# Method 4 - us pd.concat on df_list
+def method4():
+    return pd.concat(df_list, ignore_index=True)
+
 ##
 # Time both methods
 ##
@@ -80,3 +84,13 @@ for i in np.arange(n_reps):
 print 'Total time for %d repetitions of Method 3: %f [sec]' % (n_reps, np.sum(times_3))
 print 'Best time: %f' % (np.min(times_3))
 print 'Mean time: %f' % (np.mean(times_3))
+
+# Time Method 4
+times_4 = np.empty(n_reps)
+for i in np.arange(n_reps):
+    with Timer() as t:
+        df4 = method4()
+    times_4[i] = t.secs
+print 'Total time for %d repetitions of Method 4: %f [sec]' % (n_reps, np.sum(times_4))
+print 'Best time: %f' % (np.min(times_4))
+print 'Mean time: %f' % (np.mean(times_4))
