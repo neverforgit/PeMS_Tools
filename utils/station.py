@@ -1,5 +1,6 @@
 __author__ = 'Andrew Campbell'
 
+import datetime
 import os
 import shutil
 import time
@@ -228,6 +229,48 @@ def generate_time_series_V2(meta_target_path, station_path, out_path, preamble='
             ts_agg_measures(temp_ts).to_csv('summary.csv', sep=',', index=False)
     os.chdir(start_dir)
 
+
+def rollup_time_series(agg_period, station_path, out_name):
+    """
+    Used to rollup the raw time series into larger temporal aggregates. By default, the time series will be in 5-minute
+    time bins. This method can be used to bin them into 15 or 30 minute bins (or any other aggregation).
+    :param ts_df: (str) Path to csv file with the station time series. This csv must be the output of
+    station.generate_time_series
+    :param agg_period: (int) Defines how many rows to group together during aggregation.
+    :param station_path: (str) Path to the directory containing the station time_series.csv
+    processed. This directory should have been created by utils.station.get_station_targets().
+    :param out_name: (str) Name of output csv to be written in same directory as station_path
+    :return:
+    """
+    start_dir = os.getcwd()
+    os.chdir(station_path)
+    ts = pd.read_csv('time_series.csv', sep=',', index_col='Timestamp')
+    # Generate the rolling harmonic mean
+    harm_means = np.empty((ts.shape[0] / agg_period))
+    samp_sums = np.empty((ts.shape[0] / agg_period))
+    flow_sums = np.empty((ts.shape[0] / agg_period))
+    for j, i in enumerate(np.arange(0, ts.shape[0], agg_period)):
+        end = i + agg_period  # end index of period
+        ss = np.sum(ts['Samples'][i:end])  # sum of samples
+        samp_sums[j] = ss
+        sf = np.sum(ts['Total_Flow'][i:end])  # sum of flows
+        flow_sums[j] = sf
+        hm = sf / np.sum(np.divide(ts['Total_Flow'][i:end], ts['Avg_Speed'][i:end]))
+        harm_means[j] = hm
+    # Create output dataframe and write to csv
+    out = ts.iloc[np.arange(0, ts.shape[0], agg_period), :]
+    out.drop('Avg_Occ', axis=1, inplace=True)
+    out.drop('Observed', axis=1, inplace=True)
+    out.drop('Samples', axis=1, inplace=True)
+    out.drop('Total_Flow', axis=1, inplace=True)
+    out.drop('Avg_Speed', axis=1, inplace=True)
+    out['Samples_Rollup'] = samp_sums
+    out['Total_Flow_Rollup'] = flow_sums
+    out['Avg_Speed_Rollup'] = harm_means
+    out.to_csv(out_name, header=True, index=True)
+    os.chdir(start_dir)
+
+
 def generate_distributions(ts_df, metric, bins, days=None):
     """
     Reads a station time series (output of station.generate_time_series()) and produces the empirical probabiltiy
@@ -276,7 +319,7 @@ def generate_distributions(ts_df, metric, bins, days=None):
         # Totals dataframe
         ##
         # NOTE for some goddamn reason this groupby(*).apply(*) generates a series with shape (288,) where
-        # ach element is an nd.array. So I then have to coerce it into a dataframe
+        # each element is an nd.array. So I then have to coerce it into a dataframe
         series = ts_temp.groupby('Minutes').apply(lambda s: np.histogram(s[metric_col], bins=bins)[0])
         totals = pd.DataFrame([a for a in series], index=series.index, columns=bins[0:-1])
         ##
@@ -288,7 +331,8 @@ def generate_distributions(ts_df, metric, bins, days=None):
         ##
         row_totals = totals.sum(axis=1)
         z = zip(row_totals, proportions.values)
-        var_tots = pd.DataFrame([np.power(a, 3)/(a-1)*b*(1-b) for a, b in z], index=row_totals.index, columns=proportions.columns)
+        var_tots = pd.DataFrame([np.power(a, 3)/(a-1)*b*(1-b) for a, b in z], index=row_totals.index,
+                                columns=proportions.columns)
         ##
         # Variance of proportions
         ##
@@ -483,6 +527,8 @@ def time_period_analysis(parent_dir, target_dir, time_period, metric, out_dir, w
 
 
 
+
+
 ######################################################################################################################
 # Helper functions
 ######################################################################################################################
@@ -535,3 +581,17 @@ def get_metric(metric):
         raise utils.util_exceptions.WrongParamError(
             'The metric parameter is invalid. Try using: None, Count, or Speed'
         )
+
+def reindex_timeseries(ts_df, start_time_string='05/01/2014 00:00:00', days=365):
+    """
+    If the time series is missing observations, inserts a row with NaN values. That way every dataframe is the same
+    size.
+    :param ts_df: (pd.DataFrame)
+    :return: (pd.DataFrame)
+    """
+    # Make the index for a full day
+    start_datetime = datetime.datetime.strptime(start_time_string, "%m/%d/%Y %H:%M:%S")
+    delta = datetime.timedelta(minutes=5)
+    time_index = [(start_datetime + i*delta).strftime("%m/%d/%Y %H:%M:%S") for i in np.arange(days*24*60/5)]
+    # Return a new dataframe that has been reindexed to the full set of observations. Missing rows will have NaN vals
+    return ts_df.reindex(time_index, method=None, copy=True)
