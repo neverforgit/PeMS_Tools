@@ -230,7 +230,7 @@ def generate_time_series_V2(meta_target_path, station_path, out_path, preamble='
     os.chdir(start_dir)
 
 
-def rollup_time_series(agg_period, station_path, out_name):
+def rollup_time_series(agg_period, station_path, out_name, nrows=105120):
     """
     Used to rollup the raw time series into larger temporal aggregates. By default, the time series will be in 5-minute
     time bins. This method can be used to bin them into 15 or 30 minute bins (or any other aggregation).
@@ -240,11 +240,16 @@ def rollup_time_series(agg_period, station_path, out_name):
     :param station_path: (str) Path to the directory containing the station time_series.csv
     processed. This directory should have been created by utils.station.get_station_targets().
     :param out_name: (str) Name of output csv to be written in same directory as station_path
+    :param nrows: (int) Number of rows that a time series with no missing observations should. Defaults to 105120,
+    365*24*60/5
     :return:
     """
     start_dir = os.getcwd()
     os.chdir(station_path)
     ts = pd.read_csv('time_series.csv', sep=',', index_col='Timestamp')
+    # Check for missing rows and reindex if needed
+    if ts.shape[0] != nrows:
+        ts = reindex_timeseries(ts)
     # Generate the rolling harmonic mean
     harm_means = np.empty((ts.shape[0] / agg_period))
     samp_sums = np.empty((ts.shape[0] / agg_period))
