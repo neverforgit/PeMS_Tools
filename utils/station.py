@@ -1,14 +1,17 @@
-__author__ = 'Andrew Campbell'
-
 import datetime
+import gc
 import os
 import shutil
+import sys
 import time
 
 import numpy as np
 import pandas as pd
 
 import utils.util_exceptions
+
+__author__ = 'Andrew Campbell'
+
 """
 These tools are used for processing Station 5-Minute raw data files. These files are reported at the district  level of
 spatial aggregation, which may be too big or small for the level of analysis. These tools allow you to extract the rows
@@ -25,7 +28,8 @@ def get_station_targets(station_path, meta_path, out_path,
     """
     Extracts station data rows from only the stations that have and ID that appears in the metadata file defined
     by meta_path. The meta_path file should be the aggregate of all stations we want to study. Thus, all station
-    filtering should be done in the creation of this aggregate metadata file.
+    filtering should be done in the creation of this aggregate metadata file. Writes the target stations to
+    csv files in the same format.
     :param station_path: (str) Path to directory with station data.
     :param meta_path: (str) Path to a file with the meta data for all case study stations. This should be the text file
     written by get_meta_targets()
@@ -196,7 +200,8 @@ def generate_time_series_V2(meta_target_path, station_path, out_path, preamble='
     fnames.sort()  # Sort names in ascending chronological order
     start_dir = os.getcwd()
     # Step 1 - Get all unique station IDs from meta_target_path. Aggregated into n_chunks arrays
-    target_ids = np.unique(pd.read_csv(meta_target_path, sep='\t')['ID'])  # IDs of stations in case study area
+    # target_ids = np.unique(pd.read_csv(meta_target_path, sep='\t')['ID'])  # IDs of stations in case study area
+    target_ids = np.unique(pd.read_csv(meta_target_path)['ID'])  # IDs of stations in case study area
     n = target_ids.shape[0] / n_chunks  # Number of IDs per set
     chunks = []
     for i in np.arange(n_chunks):
@@ -210,13 +215,17 @@ def generate_time_series_V2(meta_target_path, station_path, out_path, preamble='
         # Step 3 - Iterate through all the station data files
         os.chdir(station_path)
         tic = time.time()
-        for name in fnames:
+        for name in fnames:  # Iterate through each station data file. Each file is typically a unique date.
             print 'Processing ' + name
             temp = pd.read_csv(name, sep=',', header=None, index_col=False)
             # Step 4 - Iterate through all the IDs in the chunk, extract the time series and append to temp_chunk.
             for stat_id in chunk:
                 temp_list.append(get_id_time_series(temp, stat_id))  # Time series for stat_id
-        temp_chunk = pd.concat(temp_list)
+            del temp  # delete it to clear memory
+            # print "Size of temp_list[] = %d" %sys.getsizeof(temp_list)
+            gc.collect()
+        temp_chunk = pd.concat(temp_list)  # One big time series with all stations in chunk
+        del temp_list
         print 'Time to process %f' % (time.time() - tic)
         # Step 5 - Write the output for IDs in the current chunk
         for stat_id in chunk:
@@ -224,9 +233,10 @@ def generate_time_series_V2(meta_target_path, station_path, out_path, preamble='
             os.chdir(out_path)
             os.mkdir(str(stat_id))
             os.chdir(str(stat_id))
-            temp_ts = temp_chunk[temp_chunk['Station'] == stat_id]
+            temp_ts = temp_chunk[temp_chunk['Station'] == stat_id]  # time series with just the stat_id
             temp_ts.to_csv('time_series.csv', sep=',', index=False)
             ts_agg_measures(temp_ts).to_csv('summary.csv', sep=',', index=False)
+        del temp_chunk  # clear this from memory
     os.chdir(start_dir)
 
 
@@ -528,9 +538,6 @@ def time_period_analysis(parent_dir, target_dir, time_period, metric, out_dir, w
     print mid_points
     if write_out:
         out.to_csv(os.path.join(time_dir, m_file_name.split('.')[0] + '_analysis.csv'), header=True, index=True)
-
-
-
 
 
 
