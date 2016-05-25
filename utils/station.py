@@ -244,8 +244,6 @@ def rollup_time_series(agg_period, station_path, out_name, nrows=105120):
     """
     Used to rollup the raw time series into larger temporal aggregates. By default, the time series will be in 5-minute
     time bins. This method can be used to bin them into 15 or 30 minute bins (or any other aggregation).
-    :param ts_df: (str) Path to csv file with the station time series. This csv must be the output of
-    station.generate_time_series
     :param agg_period: (int) Defines how many rows to group together during aggregation.
     :param station_path: (str) Path to the directory containing the station time_series.csv
     processed. This directory should have been created by utils.station.get_station_targets().
@@ -264,6 +262,7 @@ def rollup_time_series(agg_period, station_path, out_name, nrows=105120):
     harm_means = np.empty((ts.shape[0] / agg_period))
     samp_sums = np.empty((ts.shape[0] / agg_period))
     flow_sums = np.empty((ts.shape[0] / agg_period))
+    #TODO should we be using ts.resample here?
     for j, i in enumerate(np.arange(0, ts.shape[0], agg_period)):
         end = i + agg_period  # end index of period
         ss = np.sum(ts['Samples'][i:end])  # sum of samples
