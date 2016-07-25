@@ -293,7 +293,8 @@ def generate_distributions(ts_df, metric, bins, days=None):
     :param ts_df: (str) Path to csv file with the station time series. This csv must be the output of
     station.generate_time_series
     :param metric: (str) Identifies the metric for which to generate a distribution. Either 'Count' or 'Speed'
-    :param bins: (list) List of bin edges, including lower and upper bins. e.g [0,1,2,3] defines three bins.
+    :param bins: (list) List of bin edges, including lower and upper bins. e.g [0,1,2,3] defines three bins. These bins
+    describe the width the metric (e.g. how many mph wide should the speed distribution bins be?)
     :param days: ([int]) Integers identifying the days of the week to create distributions for. Sunday = 0, ...
     Saturday = 6. Defaults to None. If None, all seven days used, days = [0, 1, ... 6]
     :return: ([[df...]]) List of lists of dataframes. Each sublist contains four dataframes: totals (histogram),
