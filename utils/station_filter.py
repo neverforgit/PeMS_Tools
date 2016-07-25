@@ -254,6 +254,7 @@ class StationFilter(object):
         # Group by dates
         groups = vol_5min.groupby(['date'])
         n = len(groups.groups.keys())  # number of unique groups
+        X = np.empty((n, 24))  # Feature vector n x p
         print 'Shape X: ' + str(X.shape)
         for i, (dt, g) in enumerate(groups):
             # dt is a date string, g is dataframe
