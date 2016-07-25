@@ -10,7 +10,7 @@ import utils.counts as counts
 from utils.station_filter import StationFilter
 
 __author__ = 'Andrew A Campbell'
-# This script creates MATSim validation counts for a single day based on the output of PeMS_Tools.
+# This script filters PeMS station data.
 
 def main(args):
 
